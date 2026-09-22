@@ -33,8 +33,6 @@ if __name__ == "__main__":
     print("vectors:", vectors)
 
     # The same word always maps to the same vector, wherever it appears.
-    # "sat" is at positions 1 and 2, so these rows are identical:
-    print("Same vector for 'sat'?", torch.equal(vectors[0, 1], vectors[0, 2]))  # True
 
     # The table is untrained (random weights), so these vectors are
     # meaningless for now. Training is what would push similar words
