@@ -1,7 +1,7 @@
 import math
 
 import torch
-from einops import einsum
+from einops import einsum, rearrange
 
 # Softmax turns a list of any numbers ("scores") into probabilities:
 # all positive, and they add up to 1. Bigger score -> bigger share.
@@ -38,6 +38,31 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
     # weighted sum of the values (k is summed away):
     # (..., seq_q, seq_k), (..., seq_k, d_v) -> (..., seq_q, d_v)
     return einsum(weights, V, "... q k, ... k d -> ... q d")
+
+
+def cross_entropy_loss(logits, targets):
+    max_logit = logits.max(dim=-1, keepdim=True).values
+    shifted = logits - max_logit
+    exps = torch.exp(shifted)
+    sum_exp = exps.sum(dim=-1, keepdim=True)
+    log_sum_exp = torch.log(sum_exp)
+    final = log_sum_exp + max_logit
+
+    index = rearrange(targets, "... -> ... 1")
+
+    correct = torch.gather(logits, dim=-1, index=index)
+
+    per_pos = final - correct
+
+    loss = per_pos.mean()
+
+    return loss
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
