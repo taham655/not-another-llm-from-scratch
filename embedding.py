@@ -10,7 +10,10 @@ class Embedding(nn.Module):
         super().__init__()
         # shape is (vocab_size, d_model): one row per token, so row i IS the
         # vector for token id i. (Different from Linear, where rows are outputs.)
-        self.weight = nn.Parameter(torch.randn(vocab_size, d_model, device=device, dtype=dtype))
+        self.weight = nn.Parameter(torch.empty(vocab_size, d_model, device=device, dtype=dtype))
+        # std 1 (RMSNorm comes right after, so the scale is fine), truncated at
+        # +-3 so no token starts with an extreme vector
+        nn.init.trunc_normal_(self.weight, mean=0.0, std=1.0, a=-3.0, b=3.0)
 
     def forward(self, ids):
         # ids is (batch, seq_len) of integer token ids. Indexing the weight

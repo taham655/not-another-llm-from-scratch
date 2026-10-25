@@ -8,7 +8,12 @@ class Linear(nn.Module):
     def __init__(self, input_features, output_features, device=None, dtype=None):
         super().__init__()
         # pytorch's tensor convention is output first since outputs are represented by a row 
-        self.weight = nn.Parameter(torch.randn(output_features,input_features, device=device, dtype=dtype))
+        self.weight = nn.Parameter(torch.empty(output_features, input_features, device=device, dtype=dtype))
+        # start small: std = sqrt(2 / (in + out)), so outputs stay about the same
+        # size as inputs instead of growing layer after layer. Truncated at +-3 std
+        # so no weight starts out as a wild outlier.
+        std = (2 / (input_features + output_features)) ** 0.5
+        nn.init.trunc_normal_(self.weight, mean=0.0, std=std, a=-3 * std, b=3 * std)
 
     def forward(self, x):
         # x is (batch, in) and weight is (out, in), so we transpose
