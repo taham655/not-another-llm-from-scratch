@@ -2,6 +2,7 @@ import time
 
 import numpy as np
 import torch
+import trackio
 
 from adamw import Adamw
 from model import GPT
@@ -30,6 +31,11 @@ if __name__ == "__main__":
     L, d, T = MODEL["num_layers"], MODEL["d_model"], MODEL["context_length"]
     flops_per_token = 6 * n_matmul_params + 12 * L * T * d
 
+    trackio.init(project="not-another-llm-from-scratch", config={
+        **MODEL, "batch_size": BATCH_SIZE, "steps": STEPS, "max_lr": MAX_LR,
+        "min_lr": MIN_LR, "warmup": WARMUP, "device": DEVICE,
+    })
+
     t0 = time.time()
     for step in range(STEPS):
         lr = get_lr_cosine_schedule(step, MAX_LR, MIN_LR, WARMUP, STEPS)
@@ -55,6 +61,9 @@ if __name__ == "__main__":
                 val_loss = cross_entropy_loss(model(x), y).item()
             print(f"step {step} | loss {train_loss:.3f} | val {val_loss:.3f} | lr {lr:.1e} "
                   f"| {tokens_per_sec:,.0f} tok/s | MFU {mfu:.1%}")
+            trackio.log({"train_loss": train_loss, "val_loss": val_loss, "lr": lr,
+                        "tokens_per_sec": tokens_per_sec}, step=step)
             t0 = time.time()
 
     save_checkpoint(model, opt, STEPS, "checkpoint.pt")
+    trackio.finish()

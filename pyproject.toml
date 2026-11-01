@@ -9,6 +9,7 @@ dependencies = [
     "numpy>=2.5.4",
     "regex>=2026.9.29",
     "torch>=2.14.0",
+    "trackio>=0.44.0",
 ]
 
 [[tool.uv.index]]
