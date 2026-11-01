@@ -12,7 +12,7 @@ MODEL = dict(vocab_size=10_000, context_length=256, d_model=512, num_layers=4,
 BATCH_SIZE = 32
 STEPS = 5000  # 32 * 5000 * 256 = ~41M tokens
 MAX_LR, MIN_LR, WARMUP = 1e-3, 1e-4, 200
-DEVICE = "mps"
+DEVICE = "cuda" if torch.cuda.is_available() else "mps"
 # M3 Max 30-core GPU, float32: 30 cores * 128 ALUs * 2 (multiply-add) * ~1.38 GHz
 PEAK_FLOPS = 10.6e12
 
